@@ -1,5 +1,6 @@
 from flask import Flask, request, Response
 import random
+import os
 
 app = Flask(__name__)
 
@@ -14,7 +15,7 @@ gamer_types = [
         "desc": "Strategic, loyal, and always leveling up.",
         "image": "https://yourdomain.com/images/mmo.jpg"
     },
-    # ... add more
+    # ... add more types as needed
 ]
 
 @app.route('/', methods=['GET'])
@@ -41,6 +42,5 @@ def reveal():
     ''', mimetype='text/html')
 
 if __name__ == '__main__':
-   import os
-port = int(os.environ.get("PORT", 5000))
-app.run(host="0.0.0.0", port=port)
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)
