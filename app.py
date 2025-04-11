@@ -4,7 +4,7 @@ import os
 
 app = Flask(__name__)
 
-# Serving static files
+# Serve static files
 @app.route('/static/<path:filename>')
 def serve_static(filename):
     return send_from_directory('static', filename)
@@ -13,14 +13,14 @@ gamer_types = [
     {
         "title": "FPS Freak",
         "desc": "Loves fast reflexes, shooters, and explosions.",
-        "image": "/static/images/fps.jpg"
+        "image": "https://gamer-frame.onrender.com/static/images/fps.jpg"
     },
     {
         "title": "MMO Grinder",
         "desc": "Strategic, loyal, and always leveling up.",
-        "image": "/static/images/mmo.jpg"
+        "image": "https://gamer-frame.onrender.com/static/images/mmo.jpg"
     },
-    # ... add more types as needed
+    # You can add more gamer types here
 ]
 
 @app.route('/', methods=['GET'])
@@ -28,10 +28,10 @@ def index():
     return Response(f'''
     <meta property="og:title" content="What Kind of Gamer Are You?" />
     <meta property="og:description" content="Click to reveal your gamer type!" />
-    <meta property="og:image" content="/static/images/cover.jpg" />
+    <meta property="og:image" content="https://gamer-frame.onrender.com/static/images/cover.jpg" />
     <meta name="fc:frame" content="vNext" />
     <meta name="fc:frame:button:1" content="Reveal My Type" />
-    <meta name="fc:frame:post_url" content="https://yourdomain.com/reveal" />
+    <meta name="fc:frame:post_url" content="https://gamer-frame.onrender.com/reveal" />
     ''', mimetype='text/html')
 
 @app.route('/reveal', methods=['POST'])
@@ -43,7 +43,7 @@ def reveal():
     <meta property="og:image" content="{chosen['image']}" />
     <meta name="fc:frame" content="vNext" />
     <meta name="fc:frame:button:1" content="Try Again" />
-    <meta name="fc:frame:post_url" content="https://yourdomain.com/reveal" />
+    <meta name="fc:frame:post_url" content="https://gamer-frame.onrender.com/reveal" />
     ''', mimetype='text/html')
 
 if __name__ == '__main__':
