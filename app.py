@@ -1,5 +1,5 @@
 import os
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, url_for
 import random
 import requests
 
@@ -35,7 +35,6 @@ def generate_random_gamer_type():
 
 # Function to fetch wallet data (balance, NFTs, transactions)
 def fetch_wallet_data(wallet_address):
-    # API key and endpoint for Etherscan API
     etherscan_api_key = "6K86CA6HRB1CPRNF1D3A56S3P8MVIZQUWQ"
     etherscan_url = f"https://api.etherscan.io/api?module=account&action=balance&address={wallet_address}&tag=latest&apikey={etherscan_api_key}"
 
@@ -76,6 +75,18 @@ def analyze():
                            transaction_count=transaction_count,
                            nft_count=nft_count,
                            gamer_type=gamer_type)
+
+# Leaderboard route
+@app.route('/leaderboard')
+def leaderboard():
+    # This is a simple placeholder for the leaderboard
+    # You can replace this with actual leaderboard logic
+    wallets = [
+        {'wallet': '0x123...', 'score': 1200},
+        {'wallet': '0x456...', 'score': 1100},
+        {'wallet': '0x789...', 'score': 1000},
+    ]
+    return render_template('leaderboard.html', wallets=wallets)
 
 # Ensure the app listens on the correct port and host
 if __name__ == '__main__':
