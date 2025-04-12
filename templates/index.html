@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Gamer Frame</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Orbitron&display=swap">
+  <style>
+    body {
+      background-color: #0f0f0f;
+      color: #00ffe1;
+      font-family: 'Orbitron', sans-serif;
+      text-align: center;
+      padding-top: 100px;
+    }
+    h1 {
+      font-size: 3em;
+      margin-bottom: 30px;
+    }
+    form {
+      margin-top: 30px;
+    }
+    input[type="text"] {
+      padding: 15px;
+      width: 350px;
+      border-radius: 10px;
+      border: none;
+      background-color: #1a1a1a;
+      color: #00ffe1;
+      font-size: 1.2em;
+    }
+    input[type="submit"] {
+      padding: 15px 30px;
+      border: none;
+      background-color: #00ffe1;
+      color: #0f0f0f;
+      font-weight: bold;
+      border-radius: 10px;
+      cursor: pointer;
+      margin-left: 10px;
+      font-size: 1.2em;
+    }
+    .footer {
+      margin-top: 200px;
+      font-size: 0.8em;
+      color: #555;
+    }
+  </style>
+</head>
+<body>
+  <h1>🕹️ Welcome to Gamer Frame</h1>
+  <p>Enter your Ethereum wallet to discover your gamer identity!</p>
+  <form action="/analyze">
+    <input type="text" name="wallet" placeholder="0xYourWalletAddress" required>
+    <input type="submit" value="Analyze">
+  </form>
+<br><br>
+  <a href="{{ url_for('leaderboard') }}" style="color: #00ffe1;">🏆 View Leaderboard</a>
+
+  <div class="footer">Built with ❤️ on Flask</div>
+</body>
+</html>

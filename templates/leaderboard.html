@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>🏆 Gamer Frame Leaderboard</title>
+  <style>
+    body {
+      background-color: #0e0e0e;
+      color: #00ffe1;
+      font-family: 'Arial', sans-serif;
+      text-align: center;
+      padding: 40px;
+    }
+    table {
+      width: 80%;
+      margin: 0 auto;
+      border-collapse: collapse;
+      font-size: 1.1em;
+    }
+    th, td {
+      padding: 15px;
+      border-bottom: 1px solid #333;
+    }
+    th {
+      color: #00ffe1;
+    }
+    tr:hover {
+      background-color: #111;
+    }
+    .back {
+      margin-top: 40px;
+      display: inline-block;
+      padding: 10px 20px;
+      background: #00ffe1;
+      color: black;
+      text-decoration: none;
+      border-radius: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>🏆 Top Gamer Wallets</h1>
+  <table>
+    <tr>
+      <th>Rank</th>
+      <th>Wallet</th>
+      <th>ETH</th>
+      <th>TXs</th>
+      <th>NFTs</th>
+    </tr>
+    {% for item in leaderboard %}
+    <tr>
+      <td>{{ loop.index }}</td>
+
+      <td>{{ item.wallet[:6] }}...{{ item.wallet[-4:] }}</td>
+      <td>{{ '%.4f'|format(item.eth) }}</td>
+      <td>{{ item.txs }}</td>
+      <td>{{ item.nfts }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+
+  <a href="{{ url_for('index') }}" class="back">⬅ Back to Home</a>
+</body>
+</html>

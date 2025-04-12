@@ -1,84 +1,109 @@
-
-from flask import Flask, request, Response
-import random
+import json
 import os
+import hashlib
+import requests
+from flask import Flask, render_template, request, redirect, url_for
 
 app = Flask(__name__)
 
+ETHERSCAN_API_KEY = "6K86CA6HRB1CPRNF1D3A56S3P8MVIZQUWQ"
+LEADERBOARD_FILE = "leaderboard.json"
+
 gamer_types = [
     {
-        "title": "FPS Freak",
-        "desc": "Loves fast reflexes, shooters, and explosions.",
-        "image": "/static/images/fps.jpg"
+        "title": "Casual Clicker",
+        "image": "casual_clicker.png",
+        "desc": "You enjoy simple and relaxing games. No pressure, just good vibes!"
     },
     {
-        "title": "MMO Grinder",
-        "desc": "Strategic, loyal, and always leveling up.",
-        "image": "/static/images/mmo.jpg"
+        "title": "Hardcore Raider",
+        "image": "hardcore_raider.png",
+        "desc": "You seek thrills and glory. Only the strongest survive your game list."
     },
     {
-        "title": "Stealth Assassin",
-        "desc": "Patient, tactical, and lives in the shadows.",
-        "image": "/static/images/stealth.jpg"
+        "title": "Strategic Master",
+        "image": "strategic_master.png",
+        "desc": "Chess of the digital age — you outthink, outplay, and dominate."
+    },
+    {
+        "title": "Explorer",
+        "image": "explorer.png",
+        "desc": "From pixel caves to distant galaxies, you're always discovering new realms."
     }
 ]
 
-@app.route('/', methods=['GET'])
-def index():
-    return Response("""<!DOCTYPE html>
-<html lang='en'>
-<head>
-    <meta charset='UTF-8'>
-    <meta name='viewport' content='width=device-width, initial-scale=1.0'>
-    <meta property='og:title' content='What Kind of Gamer Are You?' />
-    <meta property='og:description' content='Click to reveal your gamer type!' />
-    <meta property='og:image' content='/static/images/cover.jpg' />
-    <meta name='fc:frame' content='vNext' />
-    <meta name='fc:frame:button:1' content='Reveal My Type' />
-    <meta name='fc:frame:post_url' content='https://gamer-frame.onrender.com/reveal' />
-    <link rel='stylesheet' href='/static/css/style.css'>
-    <title>Gamer Frame</title>
-</head>
-<body>
-    <div class='container'>
-        <h1>🎮 What Kind of Gamer Are You?</h1>
-        <img src='/static/images/cover.jpg' alt='Cover Image' class='cover-img'/>
-        <form action='/reveal' method='post'>
-            <button type='submit'>Reveal My Type</button>
-        </form>
-    </div>
-</body>
-</html>""", mimetype='text/html')
+def get_wallet_data(address):
+    try:
+        bal_url = f"https://api.etherscan.io/api?module=account&action=balance&address={address}&tag=latest&apikey={ETHERSCAN_API_KEY}"
+        eth_balance = int(requests.get(bal_url).json()['result']) / 1e18
 
-@app.route('/reveal', methods=['POST'])
-def reveal():
-    chosen = random.choice(gamer_types)
-    return Response(f"""<!DOCTYPE html>
-<html lang='en'>
-<head>
-    <meta charset='UTF-8'>
-    <meta name='viewport' content='width=device-width, initial-scale=1.0'>
-    <meta property='og:title' content='You're a {chosen["title"]}!' />
-    <meta property='og:description' content='{chosen["desc"]}' />
-    <meta property='og:image' content='{chosen["image"]}' />
-    <meta name='fc:frame' content='vNext' />
-    <meta name='fc:frame:button:1' content='Try Again' />
-    <meta name='fc:frame:post_url' content='https://gamer-frame.onrender.com/reveal' />
-    <link rel='stylesheet' href='/static/css/style.css'>
-    <title>{chosen["title"]}</title>
-</head>
-<body>
-    <div class='container'>
-        <h1>You’re a <span>{chosen["title"]}</span>!</h1>
-        <p>{chosen["desc"]}</p>
-        <img src='{chosen["image"]}' alt='{chosen["title"]}' class='reveal-img'/>
-        <form action='/reveal' method='post'>
-            <button type='submit'>Try Again</button>
-        </form>
-    </div>
-</body>
-</html>""", mimetype='text/html')
+        tx_url = f"https://api.etherscan.io/api?module=account&action=txlist&address={address}&startblock=0&endblock=99999999&sort=asc&apikey={ETHERSCAN_API_KEY}"
+        txs = len(requests.get(tx_url).json()['result'])
+
+        nft_url = f"https://api.etherscan.io/api?module=account&action=tokennfttx&address={address}&startblock=0&endblock=99999999&sort=asc&apikey={ETHERSCAN_API_KEY}"
+        nfts = len(requests.get(nft_url).json()['result'])
+
+        return eth_balance, txs, nfts
+    except Exception as e:
+        print(f"Error fetching data: {e}")
+        return None, None, None
+
+def get_gamer_type_from_address(address):
+    hash_digest = hashlib.sha256(address.encode()).hexdigest()
+    index = int(hash_digest, 16) % len(gamer_types)
+    return gamer_types[index]
+
+def load_leaderboard():
+    if not os.path.exists(LEADERBOARD_FILE):
+        return []
+    with open(LEADERBOARD_FILE, 'r') as file:
+        return json.load(file)
+
+def save_to_leaderboard(wallet, eth, txs, nfts):
+    data = load_leaderboard()
+    # Check if wallet already exists
+    updated = False
+    for entry in data:
+        if entry['wallet'] == wallet:
+            entry['eth'] = eth
+            entry['txs'] = txs
+            entry['nfts'] = nfts
+            updated = True
+            break
+    if not updated:
+        data.append({"wallet": wallet, "eth": eth, "txs": txs, "nfts": nfts})
+    with open(LEADERBOARD_FILE, 'w') as file:
+        json.dump(data, file, indent=2)
+
+@app.route('/')
+def index():
+    return render_template('index.html')
+
+@app.route('/analyze')
+def analyze():
+    wallet = request.args.get('wallet')
+    if not wallet:
+        return redirect(url_for('index'))
+
+    eth, txs, nfts = get_wallet_data(wallet)
+    if eth is None:
+        return render_template("error.html")
+
+    save_to_leaderboard(wallet, eth, txs, nfts)
+
+    gamer_type = get_gamer_type_from_address(wallet)
+    return render_template("result.html",
+                           wallet=wallet,
+                           eth=eth,
+                           txs=txs,
+                           nfts=nfts,
+                           gamer_type=gamer_type)
+
+@app.route('/leaderboard')
+def leaderboard():
+    data = load_leaderboard()
+    sorted_data = sorted(data, key=lambda x: x['nfts'], reverse=True)
+    return render_template("leaderboard.html", leaderboard=sorted_data)
 
 if __name__ == '__main__':
-    port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port)
+    app.run(debug=True)

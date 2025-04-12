@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Your Gamer Type</title>
+  <style>
+    body {
+      background-color: #121212;
+      color: #f0f0f0;
+      font-family: 'Arial', sans-serif;
+      text-align: center;
+      padding: 50px;
+    }
+    img {
+      width: 300px;
+      border-radius: 15px;
+      box-shadow: 0 0 15px #00ffe1;
+      margin: 30px 0;
+    }
+    .gamer-box {
+      border: 2px solid #00ffe1;
+      border-radius: 20px;
+      padding: 30px;
+      margin: 20px auto;
+      width: 500px;
+      background: #1a1a1a;
+    }
+    .btn {
+      background-color: #00ffe1;
+      color: #000;
+      padding: 10px 20px;
+      border: none;
+      margin-top: 30px;
+      font-size: 1.1em;
+      border-radius: 10px;
+      cursor: pointer;
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+  <h1>Your Gamer Type 🎮</h1>
+  <div class="gamer-box">
+    <h2>{{ gamer_type.title }}</h2>
+    <img src="{{ url_for('static', filename='images/' + gamer_type.image) }}" alt="Gamer Type">
+    <p>{{ gamer_type.desc }}</p>
+    <hr>
+    <p><strong>Wallet:</strong> {{ wallet }}</p>
+    <p><strong>ETH Balance:</strong> {{ eth }} ETH</p>
+    <p><strong>Total Transactions:</strong> {{ txs }}</p>
+    <p><strong>NFTs Held:</strong> {{ nfts }}</p>
+    <a href="{{ url_for('index') }}" class="btn">🔄 Try Another Wallet</a>
+  </div>
+</body>
+</html>
