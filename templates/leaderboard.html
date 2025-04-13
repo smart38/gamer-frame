@@ -5,17 +5,21 @@
   <title>🏆 Gamer Frame Leaderboard</title>
   <style>
     body {
-      background-color: #0e0e0e;
+      background: #0e0e0e;
       color: #00ffe1;
       font-family: 'Arial', sans-serif;
       text-align: center;
       padding: 40px;
     }
+    h1 {
+      margin-bottom: 30px;
+      font-size: 2.5em;
+    }
     table {
       width: 80%;
       margin: 0 auto;
       border-collapse: collapse;
-      font-size: 1.1em;
+      font-size: 1.2em;
     }
     th, td {
       padding: 15px;
@@ -32,7 +36,7 @@
       display: inline-block;
       padding: 10px 20px;
       background: #00ffe1;
-      color: black;
+      color: #0e0e0e;
       text-decoration: none;
       border-radius: 10px;
     }
@@ -51,15 +55,13 @@
     {% for item in leaderboard %}
     <tr>
       <td>{{ loop.index }}</td>
-
       <td>{{ item.wallet[:6] }}...{{ item.wallet[-4:] }}</td>
-      <td>{{ '%.4f'|format(item.eth) }}</td>
+      <td>{{ "%.4f"|format(item.eth) }}</td>
       <td>{{ item.txs }}</td>
       <td>{{ item.nfts }}</td>
     </tr>
     {% endfor %}
   </table>
-
   <a href="{{ url_for('index') }}" class="back">⬅ Back to Home</a>
 </body>
 </html>

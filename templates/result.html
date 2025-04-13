@@ -5,50 +5,64 @@
   <title>Your Gamer Type</title>
   <style>
     body {
-      background-color: #121212;
+      background: #121212;
       color: #f0f0f0;
       font-family: 'Arial', sans-serif;
       text-align: center;
       padding: 50px;
+      margin: 0;
+    }
+    .container {
+      background: #1a1a1a;
+      padding: 30px;
+      border-radius: 15px;
+      width: 80%;
+      max-width: 600px;
+      margin: 0 auto;
+      box-shadow: 0 0 20px #00ffe1;
+    }
+    h1 {
+      margin-top: 0;
+      font-size: 2.5em;
+      color: #00ffe1;
     }
     img {
-      width: 300px;
+      width: 250px;
       border-radius: 15px;
       box-shadow: 0 0 15px #00ffe1;
-      margin: 30px 0;
+      margin: 20px 0;
     }
-    .gamer-box {
-      border: 2px solid #00ffe1;
-      border-radius: 20px;
-      padding: 30px;
+    .stats {
+      text-align: left;
       margin: 20px auto;
-      width: 500px;
-      background: #1a1a1a;
+      width: 80%;
+      font-size: 1.2em;
     }
     .btn {
-      background-color: #00ffe1;
-      color: #000;
-      padding: 10px 20px;
+      background: #00ffe1;
+      color: #0f2027;
+      padding: 12px 24px;
       border: none;
-      margin-top: 30px;
-      font-size: 1.1em;
       border-radius: 10px;
       cursor: pointer;
       text-decoration: none;
+      font-size: 1.1em;
+      margin-top: 20px;
     }
   </style>
 </head>
 <body>
-  <h1>Your Gamer Type 🎮</h1>
-  <div class="gamer-box">
-    <h2>{{ gamer_type.title }}</h2>
-    <img src="{{ url_for('static', filename='images/' + gamer_type.image) }}" alt="Gamer Type">
-    <p>{{ gamer_type.desc }}</p>
-    <hr>
+  <div class="container">
+    <h1>Your Gamer Type</h1>
     <p><strong>Wallet:</strong> {{ wallet }}</p>
-    <p><strong>ETH Balance:</strong> {{ eth }} ETH</p>
-    <p><strong>Total Transactions:</strong> {{ txs }}</p>
-    <p><strong>NFTs Held:</strong> {{ nfts }}</p>
+    <img src="{{ url_for('static', filename='images/' + gamer_type.image) }}" alt="{{ gamer_type.title }}">
+    <h2>{{ gamer_type.title }}</h2>
+    <p>{{ gamer_type.desc }}</p>
+    <div class="stats">
+      <p><strong>ETH Balance:</strong> {{ eth }} ETH</p>
+      <p><strong>Total Transactions:</strong> {{ txs }}</p>
+      <p><strong>NFTs Held:</strong> {{ nfts }}</p>
+    </div>
     <a href="{{ url_for('index') }}" class="btn">🔄 Try Another Wallet</a>
   </div>
 </body>

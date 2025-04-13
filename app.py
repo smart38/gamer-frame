@@ -1,94 +1,132 @@
 import os
-from flask import Flask, render_template, request, url_for
+import json
 import random
+import hashlib
 import requests
+from flask import Flask, render_template, request, redirect, url_for
 
 app = Flask(__name__)
 
-# Sample gamer types
+# Etherscan API key and leaderboard file
+ETHERSCAN_API_KEY = "6K86CA6HRB1CPRNF1D3A56S3P8MVIZQUWQ"
+LEADERBOARD_FILE = "leaderboard.json"
+
+# Sample gamer types (images are in /static/images/)
 gamer_types = [
     {
         "title": "Casual Clicker",
-        "image": "static/images/casual_clicker.png",  # Replace with actual image paths
+        "image": "casual_clicker.png",
         "desc": "You enjoy playing simple and fun games, often indulging in casual clickers or idle games."
     },
     {
         "title": "Hardcore Raider",
-        "image": "static/images/hardcore_raider.png",  # Replace with actual image paths
+        "image": "hardcore_raider.png",
         "desc": "You thrive on challenges and love grinding through tough raids in RPGs and MMOs."
     },
     {
         "title": "Strategic Master",
-        "image": "static/images/strategic_master.png",  # Replace with actual image paths
+        "image": "strategic_master.png",
         "desc": "You are a thinker, always planning your next move, whether in RTS or strategic board games."
     },
     {
         "title": "Explorer",
-        "image": "static/images/explorer.png",  # Replace with actual image paths
+        "image": "explorer.png",
         "desc": "You love exploration games, diving into new worlds and discovering all their secrets."
     }
 ]
 
-# Function to generate random gamer type
-def generate_random_gamer_type():
-    return random.choice(gamer_types)
-
-# Function to fetch wallet data (balance, NFTs, transactions)
-def fetch_wallet_data(wallet_address):
-    etherscan_api_key = "6K86CA6HRB1CPRNF1D3A56S3P8MVIZQUWQ"
-    etherscan_url = f"https://api.etherscan.io/api?module=account&action=balance&address={wallet_address}&tag=latest&apikey={etherscan_api_key}"
-
-    # Fetch ETH balance
-    eth_balance_response = requests.get(etherscan_url).json()
-    eth_balance = int(eth_balance_response['result']) / 10**18  # Convert wei to eth
-
-    # Fetch number of transactions (ERC-20 or ETH)
-    transaction_count_response = requests.get(f"https://api.etherscan.io/api?module=account&action=txlist&address={wallet_address}&startblock=0&endblock=99999999&sort=asc&apikey={etherscan_api_key}").json()
-    transaction_count = len(transaction_count_response['result'])
-
-    # Fetch NFTs held (example for ERC-721 tokens, you may need a specific API for NFT collections)
-    nft_count_response = requests.get(f"https://api.opensea.io/api/v1/assets?owner={wallet_address}&order_direction=desc&offset=0&limit=1").json()
-    nft_count = len(nft_count_response['assets'])
+def get_wallet_data(wallet_address):
+    """Fetch ETH balance, transaction count, and NFT count from Etherscan."""
+    base_url = "https://api.etherscan.io/api"
+    
+    # ETH balance
+    eth_url = f"{base_url}?module=account&action=balance&address={wallet_address}&tag=latest&apikey={ETHERSCAN_API_KEY}"
+    eth_res = requests.get(eth_url).json()
+    eth_balance = int(eth_res.get('result', 0)) / 10**18
+    
+    # Transaction count
+    tx_url = f"{base_url}?module=account&action=txlist&address={wallet_address}&startblock=0&endblock=99999999&sort=asc&apikey={ETHERSCAN_API_KEY}"
+    tx_res = requests.get(tx_url).json()
+    transaction_count = len(tx_res.get('result', []))
+    
+    # NFT count via ERC-721 transfers using the tokentx API (each transfer with 'tokenID' considered as an NFT transaction)
+    nft_url = f"{base_url}?module=account&action=tokennfttx&address={wallet_address}&startblock=0&endblock=99999999&sort=asc&apikey={ETHERSCAN_API_KEY}"
+    nft_res = requests.get(nft_url).json()
+    nft_count = 0
+    if nft_res.get('status') == '1' and 'result' in nft_res:
+        for tx in nft_res['result']:
+            # Use .get() to avoid KeyError if 'tokenID' doesn't exist.
+            if tx.get('tokenID') is not None:
+                nft_count += 1
 
     return eth_balance, transaction_count, nft_count
 
-# Homepage route
+def get_gamer_type_from_address(wallet_address):
+    """Deterministically choose gamer type based on wallet hash."""
+    hash_digest = hashlib.sha256(wallet_address.encode()).hexdigest()
+    index = int(hash_digest, 16) % len(gamer_types)
+    return gamer_types[index]
+
+def load_leaderboard():
+    """Load the leaderboard from the JSON file."""
+    if not os.path.exists(LEADERBOARD_FILE):
+        return []
+    with open(LEADERBOARD_FILE, 'r') as f:
+        return json.load(f)
+
+def save_to_leaderboard(wallet, eth, txs, nfts):
+    """Update leaderboard with data for a wallet."""
+    leaderboard = load_leaderboard()
+    # Check if wallet is already in leaderboard; update if exists
+    updated = False
+    for entry in leaderboard:
+        if entry["wallet"] == wallet:
+            entry["eth"] = eth
+            entry["txs"] = txs
+            entry["nfts"] = nfts
+            updated = True
+            break
+    if not updated:
+        leaderboard.append({"wallet": wallet, "eth": eth, "txs": txs, "nfts": nfts})
+    with open(LEADERBOARD_FILE, 'w') as f:
+        json.dump(leaderboard, f, indent=2)
+
+# Homepage route with wallet input form
 @app.route('/')
 def index():
     wallet_address = request.args.get('wallet', '')
     return render_template('index.html', wallet_address=wallet_address)
 
-# Analyze route
+# Analysis route: fetch data, save leaderboard, and show result
 @app.route('/analyze')
 def analyze():
-    wallet_address = request.args.get('wallet')
-    
-    # Fetch wallet data
-    eth_balance, transaction_count, nft_count = fetch_wallet_data(wallet_address)
-    
-    # Generate random gamer type based on wallet activity
-    gamer_type = generate_random_gamer_type()
-    
-    return render_template('result.html', 
-                           wallet_address=wallet_address,
-                           eth_balance=eth_balance,
-                           transaction_count=transaction_count,
-                           nft_count=nft_count,
+    wallet_address = request.args.get('wallet', '').strip()
+    if not wallet_address:
+        return redirect(url_for('index'))
+
+    eth, txs, nfts = get_wallet_data(wallet_address)
+    if eth is None:
+        return render_template('error.html', message="Failed to fetch data for this wallet address.")
+
+    # Save/update leaderboard
+    save_to_leaderboard(wallet_address, eth, txs, nfts)
+
+    gamer_type = get_gamer_type_from_address(wallet_address)
+    return render_template('result.html',
+                           wallet=wallet_address,
+                           eth=eth,
+                           txs=txs,
+                           nfts=nfts,
                            gamer_type=gamer_type)
 
-# Leaderboard route
+# Leaderboard route: display top wallets sorted by NFT count
 @app.route('/leaderboard')
 def leaderboard():
-    # This is a simple placeholder for the leaderboard
-    # You can replace this with actual leaderboard logic
-    wallets = [
-        {'wallet': '0x123...', 'score': 1200},
-        {'wallet': '0x456...', 'score': 1100},
-        {'wallet': '0x789...', 'score': 1000},
-    ]
-    return render_template('leaderboard.html', wallets=wallets)
+    leaderboard_data = load_leaderboard()
+    # Sort by NFT count descending
+    sorted_leaderboard = sorted(leaderboard_data, key=lambda x: x.get("nfts", 0), reverse=True)
+    return render_template("leaderboard.html", leaderboard=sorted_leaderboard)
 
-# Ensure the app listens on the correct port and host
 if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 5000))  # Default to port 5000 if not set by Render
+    port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port, debug=True)

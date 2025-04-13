@@ -2,60 +2,69 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Gamer Frame</title>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Orbitron&display=swap">
+  <title>Gamer Frame - Enter Wallet</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron&display=swap" rel="stylesheet">
   <style>
     body {
-      background-color: #0f0f0f;
+      background: radial-gradient(circle, #0f2027, #203a43, #2c5364);
       color: #00ffe1;
       font-family: 'Orbitron', sans-serif;
       text-align: center;
-      padding-top: 100px;
+      padding: 100px 20px;
+      margin: 0;
     }
     h1 {
       font-size: 3em;
       margin-bottom: 30px;
     }
     form {
-      margin-top: 30px;
+      display: inline-block;
+      background: rgba(255, 255, 255, 0.1);
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
     }
     input[type="text"] {
       padding: 15px;
       width: 350px;
-      border-radius: 10px;
       border: none;
-      background-color: #1a1a1a;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.2);
       color: #00ffe1;
       font-size: 1.2em;
+      margin-bottom: 20px;
     }
     input[type="submit"] {
       padding: 15px 30px;
-      border: none;
-      background-color: #00ffe1;
-      color: #0f0f0f;
+      font-size: 1.2em;
       font-weight: bold;
+      border: none;
       border-radius: 10px;
       cursor: pointer;
-      margin-left: 10px;
-      font-size: 1.2em;
+      background: #00ffe1;
+      color: #0f2027;
+      transition: background 0.3s ease;
     }
-    .footer {
-      margin-top: 200px;
-      font-size: 0.8em;
-      color: #555;
+    input[type="submit"]:hover {
+      background: #00e6cf;
+    }
+    .leaderboard-link {
+      margin-top: 30px;
+      display: block;
+      font-size: 1.1em;
+      color: #00ffe1;
+      text-decoration: none;
     }
   </style>
 </head>
 <body>
-  <h1>🕹️ Welcome to Gamer Frame</h1>
-  <p>Enter your Ethereum wallet to discover your gamer identity!</p>
-  <form action="/analyze">
+  <h1>Welcome to Gamer Frame</h1>
+  <p>Enter your Ethereum wallet address to discover your gamer identity!</p>
+  <form action="/analyze" method="get">
     <input type="text" name="wallet" placeholder="0xYourWalletAddress" required>
+    <br>
     <input type="submit" value="Analyze">
   </form>
-<br><br>
-  <a href="{{ url_for('leaderboard') }}" style="color: #00ffe1;">🏆 View Leaderboard</a>
-
-  <div class="footer">Built with ❤️ on Flask</div>
+  <a href="{{ url_for('leaderboard') }}" class="leaderboard-link">🏆 View Leaderboard</a>
 </body>
 </html>
